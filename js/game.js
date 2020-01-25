@@ -76,12 +76,22 @@ gameScene.create = function() {
     // make the sprite clickable
     item.setInteractive();
 
-    // creating tween - resize tween
-    item.resizeTween = this.tweens.add({
+    // creating tween
+    item.correctTween = this.tweens.add({
       targets: item,
       scaleX: 1.5,
       scaleY: 1.5,
       duration: 300,
+      paused: true,
+      yoyo: true // goes back to original state
+    });
+
+    item.wrongTween = this.tweens.add({
+      targets: item,
+      scaleX: 1.5,
+      scaleY: 1.5,
+      duration: 300,
+      angle: 90,
       paused: true,
       yoyo: true // goes back to original state
     });
@@ -96,7 +106,13 @@ gameScene.create = function() {
 
     // listen to pointerdown event
     item.on("pointerdown", () => {
-      item.resizeTween.resume(); // doesn't work with start/restart
+      const result = this.processAnswer(this.words[i].spanish);
+
+      if (result) {
+        item.correctTween.resume();
+      } else {
+        item.wrongTween.resume();
+      }
 
       // show next question
       this.showNextQuestion();
@@ -127,6 +143,10 @@ gameScene.create = function() {
     fill: "#ffffff"
   });
 
+  // correct / wrong sounds
+  this.correctSound = this.sound.add("correct");
+  this.wrongSound = this.sound.add("wrong");
+
   // show the first question
   this.showNextQuestion();
 };
@@ -137,13 +157,31 @@ gameScene.update = function() {};
 // show new question
 gameScene.showNextQuestion = function() {
   // select a random word
-  let nextWord = Phaser.Math.RND.pick(this.words); // build in Phaser helper, picks a random element from an array
+  this.nextWord = Phaser.Math.RND.pick(this.words); // build in Phaser helper, picks a random element from an array
 
   // play a sound for that word
-  nextWord.sound.play();
+  this.nextWord.sound.play();
 
   // show the text of the word in spanish
-  this.wordText.setText(nextWord.spanish);
+  this.wordText.setText(this.nextWord.spanish);
+};
+
+gameScene.processAnswer = function(userResponse) {
+  // compare user response with correct response
+  if (userResponse == this.nextWord.spanish) {
+    // it's correct
+
+    // play sound
+    this.correctSound.play();
+
+    return true;
+  }
+  // it's wrong
+
+  // play sound
+  this.wrongSound.play();
+
+  return false;
 };
 
 const config = {
