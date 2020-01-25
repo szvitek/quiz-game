@@ -24,10 +24,52 @@ gameScene.preload = function() {
 
 // create
 gameScene.create = function() {
-  this.add.sprite(0, 0, "background").setOrigin(0, 0);
+  this.items = this.add.group([
+    {
+      key: "building",
+      setXY: {
+        x: 100,
+        y: 240
+      }
+    },
+    {
+      key: "house",
+      setXY: {
+        x: 240,
+        y: 280
+      },
+      setScale: {
+        x: 0.8,
+        y: 0.8
+      }
+    },
+    {
+      key: "car",
+      setXY: {
+        x: 400,
+        y: 300
+      }
+    },
+    {
+      key: "tree",
+      setXY: {
+        x: 550,
+        y: 250
+      }
+    }
+  ]);
 
-  const soundSample = this.sound.add("correct");
-  soundSample.play();
+  // this is how to change the depth of sriptes/groups
+  this.add.sprite(0, 0, "background").setOrigin(0, 0);
+  this.items.setDepth(1);
+
+  Phaser.Actions.Call(this.items.getChildren(), item => {
+    // make the sprite clickable
+    item.setInteractive();
+    item.on("pointerdown", () => {
+      console.log("you clicked %s", item.texture.key);
+    });
+  });
 };
 
 // update loop
