@@ -66,8 +66,44 @@ gameScene.create = function() {
   Phaser.Actions.Call(this.items.getChildren(), item => {
     // make the sprite clickable
     item.setInteractive();
+
+    // creating tween - resize tween
+    item.resizeTween = this.tweens.add({
+      targets: item,
+      scaleX: 1.5,
+      scaleY: 1.5,
+      duration: 300,
+      paused: true,
+      yoyo: true // goes back to original state
+    });
+
+    // transparency tween
+    item.alphaTween = this.tweens.add({
+      targets: item,
+      alpha: 0.7,
+      duration: 200,
+      paused: true
+    });
+
+    // listen to pointerdown event
     item.on("pointerdown", () => {
-      console.log("you clicked %s", item.texture.key);
+      console.log(item);
+      item.resizeTween.resume(); // doesn't work with start/restart
+    });
+
+    // listen to pointerover event
+    item.on("pointerover", () => {
+      item.alphaTween.resume();
+    });
+
+    // listen to pointerout event
+    item.on("pointerout", () => {
+      // stop alpha tween
+      // if mouseout happens before alphaTween finished that will overwrite the alpha and stays transparent
+      item.alphaTween.stop();
+
+      // set alpha back to 1
+      item.alpha = 1;
     });
   });
 };
