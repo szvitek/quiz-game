@@ -2,7 +2,47 @@
 const gameScene = new Phaser.Scene("Game");
 
 // init parameters
-gameScene.init = function() {};
+gameScene.init = function() {
+  // words database
+  this.words = [
+    {
+      key: "building",
+      setXY: {
+        x: 100,
+        y: 240
+      },
+      spanish: "edificio"
+    },
+    {
+      key: "house",
+      setXY: {
+        x: 240,
+        y: 280
+      },
+      setScale: {
+        x: 0.8,
+        y: 0.8
+      },
+      spanish: "casa"
+    },
+    {
+      key: "car",
+      setXY: {
+        x: 400,
+        y: 300
+      },
+      spanish: "automóvil"
+    },
+    {
+      key: "tree",
+      setXY: {
+        x: 550,
+        y: 250
+      },
+      spanish: "árbol"
+    }
+  ];
+};
 
 // load asset files
 gameScene.preload = function() {
@@ -24,46 +64,15 @@ gameScene.preload = function() {
 
 // create
 gameScene.create = function() {
-  this.items = this.add.group([
-    {
-      key: "building",
-      setXY: {
-        x: 100,
-        y: 240
-      }
-    },
-    {
-      key: "house",
-      setXY: {
-        x: 240,
-        y: 280
-      },
-      setScale: {
-        x: 0.8,
-        y: 0.8
-      }
-    },
-    {
-      key: "car",
-      setXY: {
-        x: 400,
-        y: 300
-      }
-    },
-    {
-      key: "tree",
-      setXY: {
-        x: 550,
-        y: 250
-      }
-    }
-  ]);
+  this.items = this.add.group(this.words);
 
   // this is how to change the depth of sriptes/groups
   this.add.sprite(0, 0, "background").setOrigin(0, 0);
   this.items.setDepth(1);
 
-  Phaser.Actions.Call(this.items.getChildren(), item => {
+  const items = this.items.getChildren();
+
+  items.forEach((item, i) => {
     // make the sprite clickable
     item.setInteractive();
 
@@ -87,8 +96,10 @@ gameScene.create = function() {
 
     // listen to pointerdown event
     item.on("pointerdown", () => {
-      console.log(item);
       item.resizeTween.resume(); // doesn't work with start/restart
+
+      // show next question
+      this.showNextQuestion();
     });
 
     // listen to pointerover event
@@ -105,11 +116,35 @@ gameScene.create = function() {
       // set alpha back to 1
       item.alpha = 1;
     });
+
+    // create sond for each word
+    this.words[i].sound = this.sound.add(`${this.words[i].key}Audio`);
   });
+
+  // text object
+  this.wordText = this.add.text(30, 20, " ", {
+    font: "28px Open Sans",
+    fill: "#ffffff"
+  });
+
+  // show the first question
+  this.showNextQuestion();
 };
 
 // update loop
 gameScene.update = function() {};
+
+// show new question
+gameScene.showNextQuestion = function() {
+  // select a random word
+  let nextWord = Phaser.Math.RND.pick(this.words); // build in Phaser helper, picks a random element from an array
+
+  // play a sound for that word
+  nextWord.sound.play();
+
+  // show the text of the word in spanish
+  this.wordText.setText(nextWord.spanish);
+};
 
 const config = {
   type: Phaser.AUTO,
